@@ -6,7 +6,6 @@ Really this should be implemented in https://github.com/kubernetes/kube-state-me
 
 ## Usage
 
-Assuming a `Namespace` of `instrumentation` for your cluster intruments:
 `kubectl apply -f k8s/kube-event-metrics.yaml`
 
 ## Known issues
