@@ -1,4 +1,4 @@
-# kube-event-metrics
+# [kube-event-metrics](https://github.com/tommyvn/kube-event-metrics)
 
 Expose `kubernetes_event` metrics on `/metrics` for Prometheus
 
