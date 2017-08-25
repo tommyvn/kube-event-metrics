@@ -65,7 +65,7 @@ spec:
       serviceAccountName: kube-event-metrics
       containers:
       - name: kube-event-metrics
-        image: tommyvn/kube-event-metrics:v1.7.4-4
+        image: tommyvn/kube-event-metrics:v1.7.4-5
         ports:
         - name: metrics
           containerPort: 8080
