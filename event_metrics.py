@@ -53,7 +53,7 @@ async def watch_events(event_obj):
     config.load_kube_config()
     v1 = client.CoreV1Api()
     w = watch.Watch()
-    gen = w.stream(v1.list_event_for_all_namespaces, _request_timeout=10)
+    gen = w.stream(v1.list_event_for_all_namespaces)
     while True:
         event = await loop.run_in_executor(None, partial(next, gen))
         event_object = event['object']
