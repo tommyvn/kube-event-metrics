@@ -30,7 +30,7 @@ def flatten(y):
 
 
 async def metrics_handler(request, event_obj):
-    header = "TYPE kubernetes_events counter"
+    header = "# TYPE kubernetes_events counter"
     metrics = "\n".join(
         'kubernetes_events{{{}}} {}'.format(",".join(['{}={}'.format(label, json.dumps(str(value))) for label, value in flatten(event).items()]), event['count'])
         for event in event_obj.values()
