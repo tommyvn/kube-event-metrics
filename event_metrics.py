@@ -45,7 +45,7 @@ async def watch_events_wrapper(event_obj, loop):
         await watch_events(event_obj)
     except Exception as e:
         current_count = 1 if 'k8s-event-metrics' not in event_obj else (event_obj['k8s-event-metrics']["count"] + 1)
-        event_obj['k8s-event-metrics'] = {"message": str(e), "type": "Error", "reason": "Exception in k8s-event-metrics server", "count": current_count, "lastTimestamp": datetime.datetime.now().isoformat()}
+        event_obj['kube-event-metrics'] = {"message": str(e), "type": "Error", "reason": "Exception in kube-event-metrics server", "involvedObject": {"name": "kube-event-metrics"}, "count": current_count, "lastTimestamp": datetime.datetime.now().isoformat()}
     await asyncio.sleep(10)
     asyncio.ensure_future(watch_events_wrapper(event_obj, loop=loop), loop=loop)
 
