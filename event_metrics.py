@@ -6,6 +6,8 @@ import json
 import cachetools
 import sys
 import os
+import dateutil.parser as dp
+import datetime
 
 EVENT_TTL = 600  # Expire events after 5 minutes
 
@@ -32,7 +34,7 @@ def flatten(y):
 async def metrics_handler(request, event_obj):
     header = "# TYPE kubernetes_events counter"
     metrics = "\n".join(
-        'kubernetes_events{{{}}} {}'.format(",".join(['{}={}'.format(label, json.dumps(str(value))) for label, value in flatten(event).items()]), event['count'])
+        'kubernetes_events{{{}}} {} {}'.format(",".join(['{}={}'.format(label, json.dumps(str(value))) for label, value in flatten(event).items()]), event['count'], int((dp.parse(event['lastTimestamp']).replace(tzinfo=datetime.timezone.utc) - datetime.datetime(1970, 1, 1).replace(tzinfo=datetime.timezone.utc)).total_seconds() * 1000))
         for event in event_obj.values()
     )
     return Response(text="\n".join([header, metrics, ""]))
@@ -42,7 +44,8 @@ async def watch_events_wrapper(event_obj, loop):
     try:
         await watch_events(event_obj)
     except Exception as e:
-        event_obj['k8s-event-metrics'] = {"message": str(e), "type": "Error", "reason": "Exception in k8s-event-metrics server", "count": 99}
+        current_count = 1 if 'k8s-event-metrics' not in event_obj else (event_obj['k8s-event-metrics']["count"] + 1)
+        event_obj['k8s-event-metrics'] = {"message": str(e), "type": "Error", "reason": "Exception in k8s-event-metrics server", "count": current_count, "lastTimestamp": datetime.datetime.now().isoformat()}
     await asyncio.sleep(10)
     asyncio.ensure_future(watch_events_wrapper(event_obj, loop=loop), loop=loop)
 
