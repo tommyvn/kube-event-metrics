@@ -1,0 +1,4 @@
+aiohttp==2.2.5
+cacheutils==0.1.1
+kubernetes==3.0.0
+python-dateutil==2.6.1

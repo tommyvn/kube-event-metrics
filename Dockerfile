@@ -5,8 +5,8 @@ RUN /usr/local/bin/kubectl config set-cluster proxy --server=http://127.0.0.1:80
 RUN /usr/local/bin/kubectl config set-context proxy --cluster=proxy
 RUN /usr/local/bin/kubectl config use-context proxy
 RUN apk add --no-cache python3
-RUN pip3 install aiohttp kubernetes cacheutils
-ADD event_metrics.py ./event_metrics.py
+ADD requirements.txt event_metrics.py ./
+RUN pip3 install -r requirements.txt
 EXPOSE 8080
 ENV PYTHONUNBUFFERED 1
 ENTRYPOINT ["/usr/bin/env", "python3", "event_metrics.py"]
