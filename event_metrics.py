@@ -35,7 +35,7 @@ async def metrics_handler(request, event_obj):
         'kubernetes_events{{{}}} {}'.format(",".join(['{}={}'.format(label, json.dumps(str(value))) for label, value in flatten(event).items()]), event['count'])
         for event in event_obj.values()
     )
-    return Response(text="\n".join([header, metrics]))
+    return Response(text="\n".join([header, metrics, ""]))
 
 
 async def watch_events_wrapper(event_obj, loop):
