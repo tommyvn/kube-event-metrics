@@ -54,8 +54,13 @@ async def watch_events(event_obj):
     v1 = client.CoreV1Api()
     w = watch.Watch()
     gen = w.stream(v1.list_event_for_all_namespaces)
+    def next_event():
+        try:
+            return next(gen)
+        except StopIteration:
+            raise Exception("StopIteration")
     while True:
-        event = await loop.run_in_executor(None, partial(next, gen))
+        event = await loop.run_in_executor(None, next_event)
         event_object = event['object']
         event_obj[event_object.involved_object.name] = event['raw_object']
         print(event['raw_object'])
