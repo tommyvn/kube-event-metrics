@@ -48,6 +48,8 @@ async def metrics_handler(request, event_obj):
 async def watch_events_wrapper(event_obj, loop):
     try:
         await watch_events(event_obj)
+    except Reconnecting:
+        pass
     except Exception as e:
         current_count = 1 if 'k8s-event-metrics' not in event_obj else (event_obj['k8s-event-metrics']["count"] + 1)
         event_obj['kube-event-metrics'] = {
@@ -56,6 +58,10 @@ async def watch_events_wrapper(event_obj, loop):
                 "lastTimestamp": datetime.datetime.now().isoformat()}
     await asyncio.sleep(10)
     asyncio.ensure_future(watch_events_wrapper(event_obj, loop=loop), loop=loop)
+
+
+class Reconnecting(Exception):
+    pass
 
 
 async def watch_events(event_obj):
@@ -68,7 +74,7 @@ async def watch_events(event_obj):
         try:
             return next(gen)
         except StopIteration:
-            raise Exception("StopIteration")
+            raise Reconnecting()
 
     while True:
         event = await loop.run_in_executor(None, next_event)
