@@ -80,7 +80,6 @@ async def watch_events(event_obj):
         event = await loop.run_in_executor(None, next_event)
         event_object = event['object']
         event_obj[event_object.involved_object.name] = event['raw_object']
-        print(event['raw_object'])
 
 
 async def start_background_tasks(app, event_obj):
