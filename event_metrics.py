@@ -34,16 +34,13 @@ def flatten(y):
 async def metrics_handler(request, event_obj):
     header = "# TYPE kubernetes_events counter"
     metrics = "\n".join(
-        'kubernetes_events{{{}}} {} {}'.format(
+        'kubernetes_events{{{}}} {}'.format(
             ",".join([
                 '{}={}'.format(label, json.dumps(str(value)))
                 for label, value in flatten(event).items()]),
-            event['count'],
-            int(
-                (dp.parse(event['lastTimestamp']).replace(tzinfo=datetime.timezone.utc) -
-                 datetime.datetime(1970, 1, 1).replace(tzinfo=datetime.timezone.utc)
-                 ).total_seconds() * 1000))
+            event['count'])
         for event in event_obj.values()
+        if (datetime.datetime.utcnow().replace(tzinfo=None) - dp.parse(event['lastTimestamp']).replace(tzinfo=None)).total_seconds() < EVENT_TTL
     )
     return Response(text="\n".join([header, metrics, ""]))
 
