@@ -9,7 +9,17 @@ import os
 import dateutil.parser as dp
 import datetime
 
-EVENT_TTL = 600  # Expire events after 5 minutes
+
+EVENT_TTL = 120  # Expire events after 2 minutes
+
+
+class K8SEventTTLCache(cachetools.TTLCache):
+    __epoch = datetime.datetime.utcfromtimestamp(0)
+
+    def __setitem__(self, key, value, *args, **kwargs):
+        cachetools.TTLCache.__setitem__(self, key, value, *args, **kwargs)
+        link = self._TTLCache__getlink(key)
+        link.expire = (dp.parse(value['lastTimestamp']).replace(tzinfo=None) - self.__epoch).total_seconds() + self.ttl
 
 
 def flatten(y):
@@ -40,7 +50,6 @@ async def metrics_handler(request, event_obj):
                 for label, value in flatten(event).items()]),
             event['count'])
         for event in event_obj.values()
-        if (datetime.datetime.utcnow().replace(tzinfo=None) - dp.parse(event['lastTimestamp']).replace(tzinfo=None)).total_seconds() < EVENT_TTL
     )
     return Response(text="\n".join([header, metrics, ""]))
 
@@ -87,7 +96,7 @@ async def start_background_tasks(app, event_obj):
 
 
 async def init(loop):
-    event_obj = cachetools.TTLCache(sys.maxsize, EVENT_TTL)
+    event_obj = K8SEventTTLCache(sys.maxsize, EVENT_TTL)
     app = Application()
     app.router.add_get('/metrics', partial(metrics_handler, event_obj=event_obj))
     app.on_startup.append(partial(start_background_tasks, event_obj=event_obj))
